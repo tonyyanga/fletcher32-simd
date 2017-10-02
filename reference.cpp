@@ -2,9 +2,8 @@
 
 /* Reference implementation of Fletcher32, C code, not optimized */
 /* Source: https://en.wikipedia.org/wiki/Fletcher%27s_checksum#Fletcher-32 */
-uint32_t fletcher32_ref( uint16_t const *data, size_t words )
+uint32_t fletcher32_ref( uint16_t const *data, size_t words, uint32_t& sum1, uint32_t& sum2 )
 {
-    uint32_t sum1 = 0xffff, sum2 = 0xffff;
     size_t tlen;
 
     while (words) {
@@ -24,10 +23,7 @@ uint32_t fletcher32_ref( uint16_t const *data, size_t words )
 }
 
 /* Naive C implementation for illustration */
-uint32_t fletcher32_naive (uint16_t* data, size_t len) {
-    uint32_t a = 0;
-    uint32_t b = 0;
-
+uint32_t fletcher32_naive (uint16_t* data, size_t len, uint32_t& a, uint32_t& b) {
     while (len > 0) {
         a = (a + *data) % 65535;
         b = (b + a) % 65535;

@@ -22,8 +22,15 @@ int main() {
     for (int i = 0; i < 1000; i++) {
         size_t offset = rand() % (TEST_DATA_SIZE / 2);
         size_t len = rand() % (TEST_DATA_SIZE / 2);
-        if (fletcher32_ref(data + offset, len) != fletcher32_naive(data + offset, len)) {
+
+        uint32_t sum1_left = rand() % 65535;
+        uint32_t sum2_left = rand() % 65535;
+        uint32_t sum1_right = sum1_left;
+        uint32_t sum2_right = sum2_left;
+        if (fletcher32_ref(data + offset, len, sum1_left, sum2_left) != fletcher32_naive(data + offset, len, sum1_right, sum2_right)) {
             std::cout<<"Reference vs naive, failed at iteration "<<i + 1<<std::endl;
+            std::cout<<"Left: "<<sum1_left<<" "<<sum2_left<<std::endl;
+            std::cout<<"Right: "<<sum1_right<<" "<<sum2_right<<std::endl;
             break;
         }
     }
