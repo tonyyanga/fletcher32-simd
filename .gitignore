@@ -1,3 +1,10 @@
+# Project binaries
+test
+
+#vim
+*.swp
+
+
 # Prerequisites
 *.d
 
