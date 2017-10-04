@@ -24,16 +24,23 @@ int main() {
         size_t offset = rand() % (TEST_DATA_SIZE / 2);
         size_t len =  rand() % (TEST_DATA_SIZE / 2);
 
+        // Sum counters have legal values between 0 and 65535
         uint32_t sum1_left = rand() % 65535;
         uint32_t sum2_left = rand() % 65535;
+
+        // Sum counters are passed by reference, so make a copy for comparison
         uint32_t sum1_right = sum1_left;
         uint32_t sum2_right = sum2_left;
+
+        // Compare reference solution with naive C implementation
         if (fletcher32_ref(data + offset, len, sum1_left, sum2_left) != fletcher32_naive(data + offset, len, sum1_right, sum2_right)) {
             std::cout<<"Reference vs naive, failed at iteration "<<i + 1<<std::endl;
             std::cout<<"Left: "<<sum1_left<<" "<<sum2_left<<std::endl;
             std::cout<<"Right: "<<sum1_right<<" "<<sum2_right<<std::endl;
             break;
         }
+
+        // Compare reference solution with AVX2 accelerated solution
         if (fletcher32_ref(data + offset, len, sum1_left, sum2_left) != fletcher32_avx2(data + offset, len, sum1_right, sum2_right)) {
             std::cout<<"Reference vs AVX2, failed at iteration "<<i + 1<<std::endl;
             std::cout<<"Left: "<<sum1_left<<" "<<sum2_left<<std::endl;

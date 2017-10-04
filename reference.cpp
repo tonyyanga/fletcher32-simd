@@ -35,6 +35,7 @@ uint32_t fletcher32_naive (uint16_t* data, size_t len, uint32_t& a, uint32_t& b)
         len--;
     }
 
+    // Require additional mod to ensure it is 0~65535
     a = (a & 0xffff) + (a >> 16);
     b = (b & 0xffff) + (b >> 16);
 
