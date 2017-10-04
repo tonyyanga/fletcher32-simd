@@ -25,12 +25,18 @@ uint32_t fletcher32_ref( uint16_t const *data, size_t words, uint32_t& sum1, uin
 /* Naive C implementation for illustration */
 uint32_t fletcher32_naive (uint16_t* data, size_t len, uint32_t& a, uint32_t& b) {
     while (len > 0) {
-        a = (a + *data) % 65535;
-        b = (b + a) % 65535;
+        a = (a + *data);
+        b = (b + a);
+
+        a = (a & 0xffff) + (a >> 16);
+        b = (b & 0xffff) + (b >> 16);
 
         data++;
         len--;
     }
+
+    a = (a & 0xffff) + (a >> 16);
+    b = (b & 0xffff) + (b >> 16);
 
     return (b << 16) | a;
 }
