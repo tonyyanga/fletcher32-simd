@@ -50,11 +50,11 @@ uint32_t fletcher32_avx2 (uint16_t* data, size_t len, uint32_t& a, uint32_t& b) 
         asm volatile("vzeroupper");
 
         // Add ctx_a, ctx_b to a and b
-        temp_b += tlen * a;
+        temp_b += uint64_t(tlen) * a;
 
-        for (int i = 0; i < 8; i++) {
+        for (uint64_t i = 0; i < 8; i++) {
             a += ctx_a.v[i];
-            temp_b += 8 * ctx_b.v[i];
+            temp_b += uint64_t(8) * ctx_b.v[i];
             temp_b -= i * ctx_a.v[i];
         }
 
