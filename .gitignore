@@ -1,5 +1,6 @@
 # Project binaries
 test
+test_opt
 
 #vim
 *.swp
