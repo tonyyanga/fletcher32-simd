@@ -32,16 +32,20 @@ uint32_t fletcher32_avx2 (uint16_t* data, size_t len, uint32_t& a, uint32_t& b) 
         asm volatile("vmovdqu %0, %%ymm0" :: "m" (ctx_a));
         asm volatile("vmovdqu %0, %%ymm1" :: "m" (ctx_b));
 
-        for (int i = 0; i < tlen; i += 8) {
-            // Load data
-            asm volatile("vpmovzxwd %0, %%ymm2"::"m" (*data));
+        // Checksum loop optimized for pipeline
+        asm volatile("vpmovzxwd %0, %%ymm2"::"m" (*data));
+        data += 8;
 
-            // Addition
+        for (int i = 8; i < tlen; i += 8) {
             asm volatile("vpaddq %ymm0, %ymm2, %ymm0");
+            asm volatile("vpmovzxwd %0, %%ymm2"::"m" (*data));
             asm volatile("vpaddq %ymm0, %ymm1, %ymm1");
 
             data += 8;
         }
+        asm volatile("vpaddq %ymm0, %ymm2, %ymm0");
+        asm volatile("vpaddq %ymm0, %ymm1, %ymm1");
+        // End of checksum loop
 
         // Save context after loop
         asm volatile("vmovdqu %%ymm0, %0" : "=m" (ctx_a));
@@ -60,7 +64,8 @@ uint32_t fletcher32_avx2 (uint16_t* data, size_t len, uint32_t& a, uint32_t& b) 
 
         // Equivalent to a = a % 65535; b = b % 65535
         a = (a & 0xffff) + (a >> 16);
-        temp_b = temp_b % 65535;
+        temp_b = (temp_b & 0xffff) + (temp_b >> 16);
+        temp_b = (temp_b & 0xffff) + (temp_b >> 16);
     }
 
     // update provided counter b
