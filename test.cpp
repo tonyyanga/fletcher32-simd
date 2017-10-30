@@ -19,9 +19,32 @@ int main() {
         data[i] = uint16_t(rand());
     }
 
+    // Speed test for AVX2 implementation
+    clock_t begin = clock();
+    for (int i = 0; i < 10000; i++) {
+        size_t offset = 4 + rand() % (TEST_DATA_SIZE / 2);
+
+        // Keep offset aligned
+        offset -= reinterpret_cast<uintptr_t>(offset + data) % 4;
+
+        size_t len =  rand() % (TEST_DATA_SIZE / 2);
+
+        // Sum counters have legal values between 0 and 65535
+        uint32_t sum1_right = rand() % 65535;
+        uint32_t sum2_right = rand() % 65535;
+
+        fletcher32_avx2(data + offset, len, sum1_right, sum2_right);
+    }
+    clock_t end = clock();
+    std::cout<<"Elapsed "<<end - begin<<" clock cycles"<<std::endl;
+
     // Iterate with random offset and length
     for (int i = 0; i < 10000; i++) {
-        size_t offset = rand() % (TEST_DATA_SIZE / 2);
+        size_t offset = 4 + rand() % (TEST_DATA_SIZE / 2);
+
+        // Keep offset aligned
+        offset -= reinterpret_cast<uintptr_t>(offset + data) % 4;
+
         size_t len =  rand() % (TEST_DATA_SIZE / 2);
 
         // Sum counters have legal values between 0 and 65535
