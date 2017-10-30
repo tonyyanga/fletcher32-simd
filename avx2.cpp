@@ -16,15 +16,15 @@ uint32_t fletcher32_avx2 (uint16_t* data, size_t len, uint32_t& a, uint32_t& b) 
 
     uint64_t temp_b = b; // prevent overflow in b
 
-    while (len >= 8) {
+    while (len >= 16) {
         tlen = (len >= 359 * 8) ? 359 * 8 : len;
-        tlen = tlen - tlen % 8;
+        tlen = tlen - tlen % 16;
         len -= tlen;
 
         // Register usage:
         // YMM0 => ctx_a (sum1, a)
         // YMM1 => ctx_b (sum2, b)
-        // YMM2 => input
+        // YMM2, YMM3 => input
 
         // Load context before start
         memset(&ctx_a, 0, sizeof(fletcher_avx2));
@@ -35,15 +35,25 @@ uint32_t fletcher32_avx2 (uint16_t* data, size_t len, uint32_t& a, uint32_t& b) 
         // Checksum loop optimized for pipeline
         asm volatile("vpmovzxwd %0, %%ymm2"::"m" (*data));
         data += 8;
+        asm volatile("vpmovzxwd %0, %%ymm3"::"m" (*data));
+        data += 8;
 
-        for (int i = 8; i < tlen; i += 8) {
+        for (int i = 16; i < tlen; i += 16) {
             asm volatile("vpaddq %ymm0, %ymm2, %ymm0");
             asm volatile("vpmovzxwd %0, %%ymm2"::"m" (*data));
+            data += 8;
             asm volatile("vpaddq %ymm0, %ymm1, %ymm1");
 
+            asm volatile("vpaddq %ymm0, %ymm3, %ymm0");
+            asm volatile("vpmovzxwd %0, %%ymm3"::"m" (*data));
             data += 8;
+            asm volatile("vpaddq %ymm0, %ymm1, %ymm1");
         }
+
         asm volatile("vpaddq %ymm0, %ymm2, %ymm0");
+        asm volatile("vpaddq %ymm0, %ymm1, %ymm1");
+
+        asm volatile("vpaddq %ymm0, %ymm3, %ymm0");
         asm volatile("vpaddq %ymm0, %ymm1, %ymm1");
         // End of checksum loop
 
